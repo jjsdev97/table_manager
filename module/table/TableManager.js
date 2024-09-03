@@ -165,29 +165,29 @@ class TableManager {
 
     this.#attributes.forEach((attribute, index) => {
       const tableAttr = document.createElement("th");
-
-      const sortButton = document.createElement("button");
-      sortButton.innerHTML = "sort";
-      sortButton.dataset.attribute = attribute;
-
-      sortButton.dataset.option =
-        this.#sortAttribute == attribute &&
-        this.#sortOption == Constant.SORT_ASCENDING
-          ? Constant.SORT_DESCENDING
-          : Constant.SORT_ASCENDING;
-      sortButton.addEventListener("click", (e) => {
-        this.setSortParameter(
-          e.target.dataset.attribute,
-          e.target.dataset.option
-        );
-        this.sortData();
-        this.clear();
-        this.make();
-      });
-
       tableAttr.innerHTML = this.#attributesKor[index] ?? attribute;
-      tableAttr.append(sortButton);
+      if (this.#objectAttribute.indexOf(attribute) == -1) {
+        const sortButton = document.createElement("button");
+        sortButton.innerHTML = "sort";
+        sortButton.dataset.attribute = attribute;
 
+        sortButton.dataset.option =
+          this.#sortAttribute == attribute &&
+          this.#sortOption == Constant.SORT_ASCENDING
+            ? Constant.SORT_DESCENDING
+            : Constant.SORT_ASCENDING;
+        sortButton.addEventListener("click", (e) => {
+          this.setSortParameter(
+            e.target.dataset.attribute,
+            e.target.dataset.option
+          );
+          this.sortData();
+          this.clear();
+          this.make();
+        });
+
+        tableAttr.append(sortButton);
+      }
       tableHeadRow.append(tableAttr);
     });
     tableHead.append(tableHeadRow);
@@ -261,7 +261,7 @@ class TableManager {
         let tableData = tableRow.children[attrIndex];
         let data = this.getData(rowIndex, attribute);
         if (data instanceof HTMLDivElement) {
-          tableData.innerHTML = '';
+          tableData.innerHTML = "";
           tableData.append(data);
         } else {
           tableData.innerHTML = data;
@@ -318,11 +318,13 @@ class TableManager {
     if (
       Object.isObject(data[attribute]) &&
       this.#objectAttribute.indexOf(attribute) != -1
-    ){
-      const buttonContainer = this.makeObjectToNewView(data[attribute], attribute);
+    ) {
+      const buttonContainer = this.makeObjectToNewView(
+        data[attribute],
+        attribute
+      );
       return buttonContainer;
     }
-      
 
     return data ? data[attribute] ?? "&nbsp;" : "&nbsp;";
   }
@@ -336,7 +338,6 @@ class TableManager {
       buttonContainer.append(button);
     });
 
-  
     return buttonContainer;
   }
 
