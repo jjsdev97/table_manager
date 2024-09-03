@@ -53,7 +53,7 @@ class TableManager {
     this.#listSizeOption = listSizeOption;
   }
 
-  setObjectAttribute(targetAttribute, targetTitle) {
+  addObjectAttribute(targetAttribute, targetTitle) {
     this.#objectAttribute.push(targetAttribute);
     this.#objectAttributeTitle.push(targetTitle);
   }
@@ -188,6 +188,7 @@ class TableManager {
 
         tableAttr.append(sortButton);
       }
+
       tableHeadRow.append(tableAttr);
     });
     tableHead.append(tableHeadRow);

@@ -7,7 +7,7 @@ tableManager.attributes = ['num', 'name', 'type' ,'weaknesses', 'next_evolution'
 tableManager.attributesKor = [ '번호', '이름', '타입',  '약점'];
 tableManager.listSize = 10;
 tableManager.pagingSize = 7;
-tableManager.setObjectAttribute('next_evolution', 'name');
+tableManager.addObjectAttribute('next_evolution', 'name');
 tableManager.make();
 
 console.log(tableManager);
