@@ -1,4 +1,5 @@
-import * as Constant from './constant/tableConstant.js';
+import * as Constant from "./constant/tableConstant.js";
+import * as Object from "./util/objectUtil.js";
 
 class TableManager {
   #attributes;
@@ -15,18 +16,20 @@ class TableManager {
   #searchWord;
   #sortAttribute;
   #sortOption;
-  #topMenus = [ Constant.TOP_MENU_LISTSIZE, Constant.TOP_MENU_SEARCH ];
-  #listSizeOption = [ 10, 25, 50, 100, 150 ];
+  #topMenus = [Constant.TOP_MENU_LISTSIZE, Constant.TOP_MENU_SEARCH];
+  #listSizeOption = [10, 25, 50, 100, 150];
+  #objectAttribute = new Array();
+  #objectAttributeTitle = new Array();
 
   constructor(divID) {
     this.#tableContainer = document.getElementById(divID);
-  } 
+  }
 
   set attributes(attributes) {
     this.#attributes = attributes;
   }
 
-  set attributesKor(attributesKor){
+  set attributesKor(attributesKor) {
     this.#attributesKor = attributesKor;
   }
   set dataSet(dataSet) {
@@ -42,22 +45,27 @@ class TableManager {
     this.#pagingSize = pagingSize;
   }
 
-  set topMenus(topMenus){
+  set topMenus(topMenus) {
     this.#topMenus = topMenus;
   }
 
-  set listSizeOption(listSizeOption){
+  set listSizeOption(listSizeOption) {
     this.#listSizeOption = listSizeOption;
+  }
+
+  setObjectAttribute(targetAttribute, targetTitle) {
+    this.#objectAttribute.push(targetAttribute);
+    this.#objectAttributeTitle.push(targetTitle);
   }
 
   get table() {
     return this.#table;
   }
 
-  duplicateDataSet(){
+  duplicateDataSet() {
     this.#usingDataSet = JSON.parse(JSON.stringify(this.#originDataSet));
   }
-  
+
   make() {
     this.createTableElement();
     this.appendTopMenu();
@@ -67,19 +75,19 @@ class TableManager {
     this.changeFields();
   }
 
-  setSortParameter(sortAttribute, sortOption){
+  setSortParameter(sortAttribute, sortOption) {
     this.#sortAttribute = sortAttribute;
     this.#sortOption = sortOption;
   }
 
-  setSearchKeyword(searchKey, searchWord){
+  setSearchKeyword(searchKey, searchWord) {
     this.#searchKey = searchKey;
     this.#searchWord = searchWord;
   }
 
   appendTopMenu() {
-    const topMenuContainer = document.createElement('div');
-    topMenuContainer.style.display = 'flex';
+    const topMenuContainer = document.createElement("div");
+    topMenuContainer.style.display = "flex";
 
     this.#topMenus.forEach((menu) => {
       const topMenu = this.createTopMenu(menu);
@@ -89,8 +97,8 @@ class TableManager {
     this.#tableContainer.prepend(topMenuContainer);
   }
 
-  createTopMenu(menu){
-    switch(menu){
+  createTopMenu(menu) {
+    switch (menu) {
       case Constant.TOP_MENU_LISTSIZE:
         return this.createTopMenuListSize();
         break;
@@ -99,57 +107,57 @@ class TableManager {
         break;
     }
   }
-  
-  createTopMenuListSize(){
-    const topMenuListSize = document.createElement('div');
-    const topMenuListSizeSelect = document.createElement('select');
 
-    this.#listSizeOption.forEach((option)=>{
-      const selectOption = document.createElement('option');
+  createTopMenuListSize() {
+    const topMenuListSize = document.createElement("div");
+    const topMenuListSizeSelect = document.createElement("select");
+
+    this.#listSizeOption.forEach((option) => {
+      const selectOption = document.createElement("option");
       selectOption.value = option;
       selectOption.innerHTML = option;
-      if(option == this.#listSize) selectOption.selected = true;
+      if (option == this.#listSize) selectOption.selected = true;
 
       topMenuListSizeSelect.append(selectOption);
-    })      
+    });
 
-    topMenuListSizeSelect.addEventListener('change', (e) => {
+    topMenuListSizeSelect.addEventListener("change", (e) => {
       this.changeListSize(e.target.value);
-    })
+    });
 
     return topMenuListSizeSelect;
-  };  
+  }
 
-  createTopMenuSearchBar(){
-    const topMenuSearchBar = document.createElement('div');
-    const searchKeySelect = document.createElement('select');
-    this.#attributes.forEach((attribute)=>{
-      const searchKeyOption = document.createElement('option');
+  createTopMenuSearchBar() {
+    const topMenuSearchBar = document.createElement("div");
+    const searchKeySelect = document.createElement("select");
+    this.#attributes.forEach((attribute) => {
+      const searchKeyOption = document.createElement("option");
       searchKeyOption.value = attribute;
       searchKeyOption.innerHTML = attribute;
-      if(attribute === this.#searchKey) searchKeyOption.selected = true;
+      if (attribute === this.#searchKey) searchKeyOption.selected = true;
 
       searchKeySelect.append(searchKeyOption);
-    })
-    const searchInput = document.createElement('input');
-    searchInput.value = this.#searchWord ?? '';
+    });
+    const searchInput = document.createElement("input");
+    searchInput.value = this.#searchWord ?? "";
 
-    const searchButton = document.createElement('button');
-    searchButton.innerHTML = '검색';
+    const searchButton = document.createElement("button");
+    searchButton.innerHTML = "검색";
 
-    searchButton.addEventListener('click', (e) => {
+    searchButton.addEventListener("click", (e) => {
       this.setSearchKeyword(searchKeySelect.value, searchInput.value);
       this.filterData();
       this.clear();
       this.make();
-    })
+    });
 
     topMenuSearchBar.append(searchKeySelect);
     topMenuSearchBar.append(searchInput);
     topMenuSearchBar.append(searchButton);
 
     return topMenuSearchBar;
-  };
+  }
 
   appendTableHead() {
     const tableHead = document.createElement("thead");
@@ -158,17 +166,24 @@ class TableManager {
     this.#attributes.forEach((attribute, index) => {
       const tableAttr = document.createElement("th");
 
-      const sortButton = document.createElement('button');
-      sortButton.innerHTML = 'sort';
+      const sortButton = document.createElement("button");
+      sortButton.innerHTML = "sort";
       sortButton.dataset.attribute = attribute;
-      
-      sortButton.dataset.option = (this.#sortAttribute == attribute && this.#sortOption == Constant.SORT_ASCENDING) ? Constant.SORT_DESCENDING : Constant.SORT_ASCENDING
-      sortButton.addEventListener('click', (e)=> {
-        this.setSortParameter(e.target.dataset.attribute, e.target.dataset.option)
+
+      sortButton.dataset.option =
+        this.#sortAttribute == attribute &&
+        this.#sortOption == Constant.SORT_ASCENDING
+          ? Constant.SORT_DESCENDING
+          : Constant.SORT_ASCENDING;
+      sortButton.addEventListener("click", (e) => {
+        this.setSortParameter(
+          e.target.dataset.attribute,
+          e.target.dataset.option
+        );
         this.sortData();
         this.clear();
         this.make();
-      })
+      });
 
       tableAttr.innerHTML = this.#attributesKor[index] ?? attribute;
       tableAttr.append(sortButton);
@@ -200,13 +215,12 @@ class TableManager {
 
   createTableElement() {
     this.#table = document.createElement("table");
-    this.#table.classList.add('table');
-    this.#table.classList.add('table-striped');
+    this.#table.classList.add("table");
+    this.#table.classList.add("table-striped");
     this.#tableContainer.append(this.#table);
   }
 
   paging(page) {
-
     if (isNaN(page)) {
       switch (page) {
         case Constant.PAGING_START:
@@ -232,9 +246,9 @@ class TableManager {
     this.changeFields();
   }
 
-  clear(){
+  clear() {
     this.#page = 1;
-    this.#tableContainer.innerHTML = '';
+    this.#tableContainer.innerHTML = "";
   }
 
   changeFields() {
@@ -245,7 +259,13 @@ class TableManager {
 
       this.#attributes.forEach((attribute, attrIndex) => {
         let tableData = tableRow.children[attrIndex];
-        tableData.innerHTML = this.getData(rowIndex, attribute);
+        let data = this.getData(rowIndex, attribute);
+        if (data instanceof HTMLDivElement) {
+          tableData.innerHTML = '';
+          tableData.append(data);
+        } else {
+          tableData.innerHTML = data;
+        }
       });
     }
   }
@@ -267,7 +287,7 @@ class TableManager {
     ) {
       if (pagingIndex > this.getLastPage()) break;
       const button = this.makePagingButton(pagingIndex);
-      if(pagingIndex == this.#page) button.classList.add('on');
+      if (pagingIndex == this.#page) button.classList.add("on");
       pagingButtons.push(button);
     }
     pagingButtons.push(this.makePagingButton(Constant.PAGING_RIGHT));
@@ -280,14 +300,13 @@ class TableManager {
     this.#tableContainer.append(this.#pager);
   }
 
-  changeListSize(listSize){
+  changeListSize(listSize) {
     this.clear();
     this.listSize = listSize;
     this.make();
   }
-  
 
-  getPagingIndex() {  
+  getPagingIndex() {
     let divide = Math.floor((this.#page - 1) / this.#pagingSize);
     return divide * this.#pagingSize + 1;
   }
@@ -296,26 +315,49 @@ class TableManager {
     let dataIndex = rowIndex + (this.#page - 1) * this.#listSize;
     let data = this.#usingDataSet[dataIndex];
 
-    if(this.isObject(data[attribute])) return this.objectToString(data[attribute]);
+    if (
+      Object.isObject(data[attribute]) &&
+      this.#objectAttribute.indexOf(attribute) != -1
+    ){
+      const buttonContainer = this.makeObjectToNewView(data[attribute], attribute);
+      return buttonContainer;
+    }
+      
 
     return data ? data[attribute] ?? "&nbsp;" : "&nbsp;";
-
-
   }
 
-  isObject(target){
-    return (typeof target === 'object' && target != null);
+  makeObjectToNewView(object, attribute) {
+    const buttonContainer = document.createElement("div");
+
+    object.forEach((element) => {
+      let button = this.createObjectAlertButton(element, attribute);
+
+      buttonContainer.append(button);
+    });
+
+  
+    return buttonContainer;
   }
 
-  objectToString(object){
-    //구현 필요, 재귀?
-    return JSON.stringify(object);
+  createObjectAlertButton(object, attribute) {
+    const button = document.createElement("button");
+    let title = "";
+    this.#objectAttribute.forEach((item, index) => {
+      if (attribute == item) title = object[this.#objectAttributeTitle[index]];
+    });
+
+    button.innerHTML = title;
+    button.addEventListener("click", () => {
+      alert(Object.objectToString(object));
+    });
+    return button;
   }
 
-  sortData(){
+  sortData() {
     const targetAttribute = this.#sortAttribute;
 
-    switch(this.#sortOption){
+    switch (this.#sortOption) {
       case Constant.SORT_ASCENDING:
         this.#usingDataSet.sort(compare);
         break;
@@ -323,22 +365,27 @@ class TableManager {
         this.#usingDataSet.reverse(compare);
         break;
     }
-    
-    function compare(a, b){
-      // 문자열 처리, 오브젝트 처리 등 필요함
-      // if(isObject(a) || isObject(b)){
-      //    objectToString();
-      // }
-      if(a[targetAttribute] > b[targetAttribute]) return 1;
-      if(a[targetAttribute] < b[targetAttribute]) return -1;
+
+    function compare(a, b) {
+      let targetA = a[targetAttribute];
+      let targetB = b[targetAttribute];
+      targetA = Object.isObject(targetA)
+        ? Object.objectToString(targetA)
+        : targetA;
+      targetB = Object.isObject(targetB)
+        ? Object.objectToString(targetB)
+        : targetB;
+
+      if (targetA > targetB) return 1;
+      if (targetA < targetB) return -1;
       return 0;
     }
-
-  
   }
 
-  filterData(){
-    this.#usingDataSet =  this.#originDataSet.filter(data => data[this.#searchKey].indexOf(this.#searchWord) != -1);
+  filterData() {
+    this.#usingDataSet = this.#originDataSet.filter(
+      (data) => data[this.#searchKey].indexOf(this.#searchWord) != -1
+    );
   }
 
   makePagingButton(input) {
