@@ -20,6 +20,7 @@ class TableManager {
   #listSizeOption = [10, 25, 50, 100, 150];
   #objectAttribute = new Array();
   #objectAttributeTitle = new Array();
+  #imageAttributes;
 
   constructor(divID) {
     this.#tableContainer = document.getElementById(divID);
@@ -51,6 +52,10 @@ class TableManager {
 
   set listSizeOption(listSizeOption) {
     this.#listSizeOption = listSizeOption;
+  }
+
+  set imageAttributes(imageAttributes){
+    this.#imageAttributes = imageAttributes;
   }
 
   addObjectAttribute(targetAttribute, targetTitle) {
@@ -261,7 +266,8 @@ class TableManager {
       this.#attributes.forEach((attribute, attrIndex) => {
         let tableData = tableRow.children[attrIndex];
         let data = this.getData(rowIndex, attribute);
-        if (data instanceof HTMLDivElement) {
+
+        if (data instanceof HTMLDivElement || data instanceof HTMLImageElement) {
           tableData.innerHTML = "";
           tableData.append(data);
         } else {
@@ -325,6 +331,11 @@ class TableManager {
         attribute
       );
       return buttonContainer;
+    }else if(this.#imageAttributes.indexOf(attribute) != -1){
+      const imageContainer = document.createElement('img');
+      imageContainer.src = data[attribute];
+
+      return imageContainer;
     }
 
     return data ? data[attribute] ?? "&nbsp;" : "&nbsp;";
